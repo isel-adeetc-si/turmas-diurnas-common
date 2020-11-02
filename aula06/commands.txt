@@ -1,0 +1,15 @@
+# gerar chave com componentes privados e públicos
+openssl genpkey -algorithm RSA -out key.pem 
+
+# ver todos os componentes da chave
+openssl rsa -in key.pem -text
+
+# gerar chave pública a partir do ficheiro com todos os componentes
+openssl rsa -in key.pem -pubout -out key-pub.pem
+
+# ver componentes chave pública 
+openssl rsa -pubin -in key-pub.pem -text
+
+# cifrar e decifrar mensagem de exemplo
+openssl rsautl -encrypt -inkey key-pub.pem -pubin -in msg.txt -out msg.cipher
+openssl rsautl -decrypt -inkey key.pem -in msg.cipher -out msg-original.txt
