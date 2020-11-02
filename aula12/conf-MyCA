@@ -1,0 +1,22 @@
+[ req ]
+default_bits           = 2048
+distinguished_name     = req_distinguished_name
+attributes             = req_attributes
+prompt                 = no
+output_password        = changeit
+x509_extensions        = v3_ca
+
+[ req_distinguished_name ]
+C                      = PT
+L                      = Lisboa
+O                      = ISEL
+OU                     = ADEETC
+CN                     = MyCA
+
+[ req_attributes ]
+challengePassword      = changeit
+
+[ v3_ca ]
+subjectKeyIdentifier=hash
+authorityKeyIdentifier=keyid:always,issuer:always
+basicConstraints = CA:true

@@ -1,0 +1,8 @@
+# generate EC key material
+openssl ecparam -name secp256k1 -genkey -noout -out MyCA-privkey.pem
+
+# generate certificate auto-signed
+openssl req -new -x509 -config conf-MyCA -key MyCA-privkey.pem -out MyCA.pem -days 180
+
+# export to DER format
+openssl x509 -in MyCA.pem -outform DER -out MyCA.cer
