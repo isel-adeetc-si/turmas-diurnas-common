@@ -23,7 +23,7 @@ app.get('/protectedresource', (req, resp) => {
 
 app.get('/printcookies', (req, resp) => {
     resp.statusCode = 200;
-    resp.send(req.header('Cookie')+'<br>'+req.cookies);
+    resp.send(req.header('Cookie'));
 })
 
 app.get('/setcookies', (req, resp) => {
