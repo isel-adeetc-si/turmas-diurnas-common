@@ -1,6 +1,9 @@
 const express = require('express');
 const app = express();
 
+// many of the followin parsing tecnhiques could be simplifed by using the middleware cookie-parser
+// const cookieParser = require('cookie-parser')
+
 const port = 3001;
 
 app.get('/protectedresource', (req, resp) => {
@@ -20,7 +23,7 @@ app.get('/protectedresource', (req, resp) => {
 
 app.get('/printcookies', (req, resp) => {
     resp.statusCode = 200;
-    resp.send(req.header('Cookie'));
+    resp.send(req.header('Cookie')+'<br>'+req.cookies);
 })
 
 app.get('/setcookies', (req, resp) => {
@@ -32,22 +35,54 @@ app.get('/setcookies', (req, resp) => {
 })
 
 const crypto = require('crypto');
-const hmac = crypto.createHmac('sha256', 'changeit');
 
 app.get('/setcookies-hmac', (req, resp) => {
+    const hmac = crypto.createHmac('sha256', 'changeit');
+
     resp.statusCode = 200;
     // TODO: random user id
-    id =  'random id'
+    const id = 'random id';
     // compute hmac 
-    var h = hmac.digest(id);
-    // convert to base64
-    var hBase64 = Buffer.from(h).toString('base64');
+    const h = hmac.update(id).digest('hex');
+    console.log(h);
 
-    resp.setHeader('Set-Cookie', ['MyAppCookie='+id, 'T='+hBase64]);
-    resp.cookie('MyAppCookie', id+':'+hBase64, { expires: new Date(Date.now() + 900000), httpOnly: true });
-    resp.send('cookie *MyId* is protected by tag *T*');
-
+    resp.setHeader('Set-Cookie', ['HCookie='+id, 'T='+h]);
+    resp.cookie('HCookie2', id+':'+h, { expires: new Date(Date.now() + 900000), httpOnly: true });
+    resp.send('cookie protected by HMAC');
 })
+
+app.get('/checkcookies-hmac', (req, resp) => {
+    const hmac = crypto.createHmac('sha256', 'changeit');
+
+    const t1 = getAppCookies(req, resp)['T'];
+    const id = getAppCookies(req, resp)['HCookie'];
+    const t2 = hmac.update(id).digest('hex');
+    console.log(id);
+
+    console.log(t1);
+    console.log(t2);
+    if (t1 == t2) {
+        resp.statusCode = 200;
+        resp.send('Cookies are valid');
+    } else {
+        resp.statusCode = 401;
+        resp.send('Cookies hmac do not match');
+    }   
+})
+
+// returns an object with the cookies' name as keys
+const getAppCookies = (req) => {
+    // extract the raw cookies from the request headers
+    const rawCookies = req.headers.cookie.split('; ');
+
+    const parsedCookies = {};
+    rawCookies.forEach(rawCookie=>{
+        const parsedCookie = rawCookie.split('=');
+        parsedCookies[parsedCookie[0]] = parsedCookie[1];
+    });
+    return parsedCookies;
+};
+   
 
 app.listen(port, (err) => {
     if (err) {
